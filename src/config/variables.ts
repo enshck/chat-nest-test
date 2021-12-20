@@ -8,4 +8,6 @@ export default {
   dbPassword: process.env.DB_PASSWORD,
   dbName: process.env.DB_NAME,
   dbPort: process.env.DB_PORT,
+  jwtEncryptionKey: process.env.JWT_ENCRYPTION_KEY,
+  jwtTokenExpired: process.env.JWT_TOKEN_EXPIRE,
 };

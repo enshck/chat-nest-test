@@ -7,47 +7,45 @@ import {
   Default,
   AllowNull,
   BelongsToMany,
+  ForeignKey,
+  BelongsTo,
   HasMany,
 } from 'sequelize-typescript';
 import { UUIDV4 } from 'sequelize';
 
+import User from './User';
 import UserGroup from './UserGroup';
-import Group from './Group';
 import Message from './Message';
 
 @Table
-export default class User extends Model {
+export default class Group extends Model {
   @IsUUID(4)
   @PrimaryKey
   @Default(UUIDV4)
   @Column
   id: string;
 
-  @Column({
-    unique: true,
-  })
-  email: string;
-
   @Column
-  userName: string;
+  name: string;
+
+  @AllowNull
+  @Column
+  description: string;
 
   @AllowNull
   @Column
   avatar: string;
 
+  @ForeignKey(() => User)
   @Column
-  password: string;
+  creatorId: string;
 
-  @AllowNull
-  @Column
-  token: string;
+  @BelongsTo(() => User)
+  creator: User;
 
-  @HasMany(() => Group)
-  createdGroups: Group[];
+  @BelongsToMany(() => User, () => UserGroup)
+  users: User[];
 
   @HasMany(() => Message)
   messages: Message[];
-
-  @BelongsToMany(() => Group, () => UserGroup)
-  groups: Group[];
 }

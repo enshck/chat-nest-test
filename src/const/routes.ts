@@ -13,4 +13,5 @@ export const authPaths = {
 export const userPaths = {
   GET_USER: 'getUser',
   UPDATE_USER: 'updateUser',
+  UPDATE_AVATAR: 'updateAvatar',
 };

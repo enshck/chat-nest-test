@@ -11,6 +11,11 @@ import { Model } from 'sequelize';
 import { dbTables } from 'const/dbTables';
 import User from 'models/User';
 import updateUserDto from 'dto/user/updateUser.dto';
+import getExtension from 'utils/getExtension';
+import { IResponseMessage } from 'interfaces/responseMessage';
+import { avatarExtensions } from 'validation/fileUpload';
+import variables from 'config/variables';
+import getHost from 'utils/getHost';
 
 @Injectable()
 class UserService {
@@ -28,7 +33,12 @@ class UserService {
       throw new NotFoundException('User not found');
     }
 
-    return user;
+    const userData = user.get();
+
+    return {
+      ...userData,
+      avatar: `${getHost(req.hostName)}${userData.avatar}`,
+    };
   }
 
   async updateUserData(
@@ -68,6 +78,38 @@ class UserService {
     await user.update(body);
 
     return user;
+  }
+
+  async updateAvatar(
+    file: Express.Multer.File,
+    req,
+  ): Promise<IResponseMessage> {
+    const userId = req?.userId;
+    const extension = getExtension(file?.mimetype || '');
+
+    if (!avatarExtensions.includes(extension)) {
+      throw new BadRequestException(
+        'Incorrect file format. Only jpg and png files',
+      );
+    }
+
+    const currentUser = await this.userTable.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    await currentUser.update({
+      avatar: `${variables.avatarDirectory}/${userId}.${extension}`,
+    });
+
+    return {
+      message: 'File uploaded',
+    };
   }
 }
 

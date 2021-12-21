@@ -10,4 +10,7 @@ export default {
   dbPort: process.env.DB_PORT,
   jwtEncryptionKey: process.env.JWT_ENCRYPTION_KEY,
   jwtTokenExpired: process.env.JWT_TOKEN_EXPIRE,
+  avatarDirectory: process.env.AVATAR_DIRECTORY,
+  staticDirectory: process.env.STATIC_DIRECTORY,
+  env: process.env.NODE_ENV,
 };

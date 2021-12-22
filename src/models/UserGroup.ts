@@ -7,11 +7,11 @@ import Group from './Group';
 class UserGroup extends Model {
   @ForeignKey(() => Group)
   @Column
-  groupId: number;
+  groupId: string;
 
   @ForeignKey(() => User)
   @Column
-  userId: number;
+  userId: string;
 }
 
 export default UserGroup;

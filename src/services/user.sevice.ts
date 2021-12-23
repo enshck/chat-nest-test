@@ -7,6 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Model } from 'sequelize';
+import fs = require('fs');
 
 import { dbTables } from 'const/dbTables';
 import User from 'models/User';
@@ -37,7 +38,9 @@ class UserService {
 
     return {
       ...userData,
-      avatar: `${getHost(req.hostName)}${userData.avatar}`,
+      avatar: `${getHost(req.hostName)}${variables.avatarDirectory}/${
+        userData.avatar
+      }`,
     };
   }
 
@@ -103,8 +106,18 @@ class UserService {
       throw new NotFoundException('User not found');
     }
 
+    const fileName = `${userId}.${extension}`;
+
+    fs.writeFile(
+      `.${variables.staticDirectory}${variables.avatarDirectory}/${fileName}`,
+      file.buffer,
+      (err) => {
+        console.log(err, 'group avatar save error');
+      },
+    );
+
     await currentUser.update({
-      avatar: `${variables.avatarDirectory}/${userId}.${extension}`,
+      avatar: fileName,
     });
 
     return {

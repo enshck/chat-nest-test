@@ -21,4 +21,5 @@ export const groupPaths = {
   GET_GROUPS: 'getGroups',
   CREATE_GROUP: 'createGroup',
   UPDATE_GROUP: 'updateGroup',
+  UPDATE_AVATAR: 'updateAvatar',
 };

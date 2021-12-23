@@ -7,8 +7,10 @@ import {
   Post,
   UsePipes,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { groupPaths } from 'const/routes';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { controllerPaths } from 'const/routes';
 import GroupService from 'services/group.service';
@@ -18,6 +20,7 @@ import JoiValidationPipe from 'pipes/joiValidation.pipe';
 import { createGroupSchema, updateGroupSchema } from 'validation/group';
 import createGroupDto from 'dto/chat/createGroup.dto';
 import updateGroupDto from 'dto/chat/updateGroup.dto';
+import { groupPaths } from 'const/routes';
 
 export interface IGroupsResponse {
   data: Group[];
@@ -30,7 +33,7 @@ class GroupController {
   @Get(groupPaths.GET_GROUPS)
   @UseGuards(AuthGuard)
   async getGroups(@Req() req) {
-    return this.groupService.getGroups(req.userId);
+    return this.groupService.getGroups(req);
   }
 
   @Post(groupPaths.CREATE_GROUP)
@@ -45,6 +48,13 @@ class GroupController {
   @UsePipes(new JoiValidationPipe(updateGroupSchema))
   async updateGroup(@Body() body: updateGroupDto, @Req() req) {
     return this.groupService.updateGroup(body, req.userId);
+  }
+
+  @Put(groupPaths.UPDATE_AVATAR)
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async updateAvatar(@UploadedFile() file: Express.Multer.File, @Req() req) {
+    return this.groupService.updateAvatar(file, req);
   }
 }
 

@@ -13,4 +13,5 @@ export default {
   avatarDirectory: process.env.AVATAR_DIRECTORY,
   staticDirectory: process.env.STATIC_DIRECTORY,
   env: process.env.NODE_ENV,
+  groupImagesDirectory: process.env.GROUP_IMAGES_DIRECTORY,
 };

@@ -3,7 +3,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
 import variables from 'config/variables';
-
 @Module({
   imports: [
     ServeStaticModule.forRoot({

@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import fs = require('fs');
 
 import { dbTables } from 'const/dbTables';
 import Group from 'models/Group';
@@ -8,6 +14,10 @@ import { IResponseMessage } from 'interfaces/responseMessage';
 import { IGroupsResponse } from 'controllers/group.controller';
 import createGroupDto from 'dto/chat/createGroup.dto';
 import updateGroupDto from 'dto/chat/updateGroup.dto';
+import variables from 'config/variables';
+import getExtension from 'utils/getExtension';
+import { groupsImagesExtensions } from 'validation/fileUpload';
+import getHost from 'utils/getHost';
 
 @Injectable()
 class GroupService {
@@ -17,10 +27,10 @@ class GroupService {
     @Inject(dbTables.USER_GROUP_TABLE) private userGroupTable: typeof UserGroup,
   ) {}
 
-  async getGroups(userId: string): Promise<IGroupsResponse> {
+  async getGroups(req): Promise<IGroupsResponse> {
     const user = await this.userTable.findOne({
       where: {
-        id: userId,
+        id: req?.userId,
       },
       include: [
         {
@@ -46,9 +56,21 @@ class GroupService {
     }
 
     const groupsData = user.getDataValue('groups');
+    console.log(groupsData, 'data');
+
+    const updatedGroupsData = groupsData.map((elem) => {
+      const elemData = elem.get();
+
+      return {
+        ...elemData,
+        avatar: `${getHost(req.hostName)}${variables.groupImagesDirectory}/${
+          elemData.avatar
+        }`,
+      };
+    });
 
     return {
-      data: groupsData,
+      data: updatedGroupsData,
     };
   }
 
@@ -92,6 +114,54 @@ class GroupService {
 
     return {
       message: 'Group updated',
+    };
+  }
+
+  async updateAvatar(
+    file: Express.Multer.File,
+    req,
+  ): Promise<IResponseMessage> {
+    const groupId = req.query.groupId;
+
+    if (!groupId) {
+      throw new BadRequestException('Group id has not recieved');
+    }
+
+    const group = await this.groupTable.findOne({
+      where: {
+        creatorId: req.userId,
+        id: groupId,
+      },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+    const groupData = group.get();
+    const fileExtension = getExtension(file?.mimetype || '');
+
+    if (!groupsImagesExtensions.includes(fileExtension)) {
+      throw new BadRequestException(
+        'Incorrect file format. Only jpg and png files',
+      );
+    }
+
+    const fileName = `${groupData.id}.${fileExtension}`;
+
+    fs.writeFile(
+      `.${variables.staticDirectory}${variables.groupImagesDirectory}/${fileName}`,
+      file.buffer,
+      (err) => {
+        console.log(err, 'group avatar save error');
+      },
+    );
+
+    group.update({
+      avatar: fileName,
+    });
+
+    return {
+      message: 'File uploaded',
     };
   }
 }

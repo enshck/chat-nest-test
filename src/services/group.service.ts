@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import fs = require('fs');
+import { Op } from 'sequelize';
 
 import { dbTables } from 'const/dbTables';
 import Group from 'models/Group';
@@ -35,7 +36,7 @@ class GroupService {
       include: [
         {
           association: 'groups',
-          attributes: ['id', 'name', 'description', 'avatar'],
+          attributes: ['id', 'name', 'avatar'],
           through: {
             attributes: [],
           },
@@ -56,7 +57,6 @@ class GroupService {
     }
 
     const groupsData = user.getDataValue('groups');
-    console.log(groupsData, 'data');
 
     const updatedGroupsData = groupsData.map((elem) => {
       const elemData = elem.get();
@@ -95,6 +95,35 @@ class GroupService {
     };
   }
 
+  async joinToGroup(
+    groupId: string,
+    userId: string,
+  ): Promise<IResponseMessage> {
+    if (!groupId) {
+      throw new BadRequestException('groupId is required');
+    }
+
+    const result = await this.userGroupTable.findOne({
+      where: {
+        groupId,
+        userId,
+      },
+    });
+
+    if (result) {
+      throw new BadRequestException('You are alredy in group');
+    }
+
+    await this.userGroupTable.create({
+      groupId,
+      userId,
+    });
+
+    return {
+      message: 'User has joined in group',
+    };
+  }
+
   async updateGroup(
     data: updateGroupDto,
     userId: string,
@@ -114,6 +143,27 @@ class GroupService {
 
     return {
       message: 'Group updated',
+    };
+  }
+
+  async searchGroups(search: string, userId: string): Promise<IGroupsResponse> {
+    if (!search?.length) {
+      throw new BadRequestException('Search string is required');
+    }
+
+    const groups = await this.groupTable.findAll({
+      attributes: ['id', 'name', 'avatar'],
+      where: {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      },
+    });
+
+    console.log(groups, 'user');
+
+    return {
+      data: groups,
     };
   }
 

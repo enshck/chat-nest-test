@@ -22,4 +22,6 @@ export const groupPaths = {
   CREATE_GROUP: 'createGroup',
   UPDATE_GROUP: 'updateGroup',
   UPDATE_AVATAR: 'updateAvatar',
+  JOIN_GROUP: 'joinGroup',
+  SEARCH_GROUPS: 'searchGroups',
 };

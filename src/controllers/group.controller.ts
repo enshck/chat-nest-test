@@ -9,6 +9,8 @@ import {
   Put,
   UploadedFile,
   UseInterceptors,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -55,6 +57,18 @@ class GroupController {
   @UseInterceptors(FileInterceptor('file'))
   async updateAvatar(@UploadedFile() file: Express.Multer.File, @Req() req) {
     return this.groupService.updateAvatar(file, req);
+  }
+
+  @Patch(groupPaths.JOIN_GROUP)
+  @UseGuards(AuthGuard)
+  async joinGroup(@Req() req, @Query('groupId') groupId) {
+    return this.groupService.joinToGroup(groupId, req.userId);
+  }
+
+  @Get(groupPaths.SEARCH_GROUPS)
+  @UseGuards(AuthGuard)
+  async searchGroups(@Req() req, @Query('search') search) {
+    return this.groupService.searchGroups(search, req.userId);
   }
 }
 

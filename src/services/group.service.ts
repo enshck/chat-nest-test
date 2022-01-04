@@ -28,6 +28,14 @@ class GroupService {
     @Inject(dbTables.USER_GROUP_TABLE) private userGroupTable: typeof UserGroup,
   ) {}
 
+  private getFullPathOfGroupAvatar(hostName: string, avatar: string) {
+    if (!avatar) {
+      return null;
+    }
+
+    return `${getHost(hostName)}${variables.groupImagesDirectory}/${avatar}`;
+  }
+
   async getGroups(req): Promise<IGroupsResponse> {
     const user = await this.userTable.findOne({
       where: {
@@ -63,9 +71,7 @@ class GroupService {
 
       return {
         ...elemData,
-        avatar: `${getHost(req.hostName)}${variables.groupImagesDirectory}/${
-          elemData.avatar
-        }`,
+        avatar: this.getFullPathOfGroupAvatar(req.hostName, elemData.avatar),
       };
     });
 
@@ -111,7 +117,7 @@ class GroupService {
     });
 
     if (result) {
-      throw new BadRequestException('You are alredy in group');
+      throw new BadRequestException('You are already in group');
     }
 
     await this.userGroupTable.create({
@@ -121,6 +127,32 @@ class GroupService {
 
     return {
       message: 'User has joined in group',
+    };
+  }
+
+  async leaveFromGroup(
+    groupId: string,
+    userId: string,
+  ): Promise<IResponseMessage> {
+    if (!groupId) {
+      throw new BadRequestException('groupId is required');
+    }
+
+    const result = await this.userGroupTable.findOne({
+      where: {
+        groupId,
+        userId,
+      },
+    });
+
+    if (!result) {
+      throw new BadRequestException(`You're not in group`);
+    }
+
+    await result.destroy();
+
+    return {
+      message: 'User has deleted from group',
     };
   }
 
@@ -146,24 +178,42 @@ class GroupService {
     };
   }
 
-  async searchGroups(search: string, userId: string): Promise<IGroupsResponse> {
+  async searchGroups(search: string, req): Promise<IGroupsResponse> {
+    const { userId } = req;
     if (!search?.length) {
       throw new BadRequestException('Search string is required');
     }
+
+    const groupsIdWithCurrentUser = (
+      await this.userGroupTable.findAll({
+        where: {
+          userId,
+        },
+        attributes: ['groupId'],
+      })
+    ).map((elem) => elem.get()?.groupId);
 
     const groups = await this.groupTable.findAll({
       attributes: ['id', 'name', 'avatar'],
       where: {
         name: {
-          [Op.like]: `%${search}%`,
+          [Op.iLike]: `%${search}%`,
+        },
+        id: {
+          [Op.notIn]: groupsIdWithCurrentUser,
         },
       },
     });
 
-    console.log(groups, 'user');
-
     return {
-      data: groups,
+      data: groups.map((elem) => {
+        const elemData = elem.get();
+
+        return {
+          ...elemData,
+          avatar: this.getFullPathOfGroupAvatar(req.hostName, elemData.avatar),
+        };
+      }),
     };
   }
 

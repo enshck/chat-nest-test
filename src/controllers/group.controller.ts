@@ -65,10 +65,16 @@ class GroupController {
     return this.groupService.joinToGroup(groupId, req.userId);
   }
 
+  @Patch(groupPaths.LEAVE_FROM_GROUP)
+  @UseGuards(AuthGuard)
+  async leaveFromGroup(@Req() req, @Query('groupId') groupId) {
+    return this.groupService.leaveFromGroup(groupId, req.userId);
+  }
+
   @Get(groupPaths.SEARCH_GROUPS)
   @UseGuards(AuthGuard)
   async searchGroups(@Req() req, @Query('search') search) {
-    return this.groupService.searchGroups(search, req.userId);
+    return this.groupService.searchGroups(search, req);
   }
 }
 

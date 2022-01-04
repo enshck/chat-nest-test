@@ -23,5 +23,6 @@ export const groupPaths = {
   UPDATE_GROUP: 'updateGroup',
   UPDATE_AVATAR: 'updateAvatar',
   JOIN_GROUP: 'joinGroup',
+  LEAVE_FROM_GROUP: 'leaveGroup',
   SEARCH_GROUPS: 'searchGroups',
 };

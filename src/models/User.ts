@@ -14,6 +14,7 @@ import { UUIDV4 } from 'sequelize';
 import UserGroup from './UserGroup';
 import Group from './Group';
 import Message from './Message';
+import variables from 'config/variables';
 
 @Table
 export default class User extends Model {
@@ -33,7 +34,13 @@ export default class User extends Model {
 
   @AllowNull
   @Column
-  avatar: string;
+  public get avatar(): string {
+    let avatarFile = this.getDataValue('avatar');
+    if (avatarFile) {
+      avatarFile = `${variables.hostName}${variables.avatarDirectory}/${avatarFile}`;
+    }
+    return avatarFile;
+  }
 
   @Column
   password: string;

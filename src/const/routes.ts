@@ -1,8 +1,8 @@
 export const controllerPaths = {
   AUTH: 'auth',
-  LIST: 'list',
   USER: 'user',
   GROUP: 'group',
+  MESSAGE: 'message',
 };
 
 export const authPaths = {
@@ -25,4 +25,9 @@ export const groupPaths = {
   JOIN_GROUP: 'joinGroup',
   LEAVE_FROM_GROUP: 'leaveGroup',
   SEARCH_GROUPS: 'searchGroups',
+};
+
+export const messagePaths = {
+  GET_MESSAGES_FOR_GROUP: 'getMessagesForGroup',
+  CREATE_MESSAGE: 'createMessage',
 };

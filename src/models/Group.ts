@@ -16,6 +16,7 @@ import { UUIDV4 } from 'sequelize';
 import User from './User';
 import UserGroup from './UserGroup';
 import Message from './Message';
+import variables from 'config/variables';
 
 @Table
 export default class Group extends Model {
@@ -34,7 +35,13 @@ export default class Group extends Model {
 
   @AllowNull
   @Column
-  avatar: string;
+  public get avatar(): string {
+    let avatarFile = this.getDataValue('avatar');
+    if (avatarFile) {
+      avatarFile = `${variables.hostName}${variables.groupImagesDirectory}/${avatarFile}`;
+    }
+    return avatarFile;
+  }
 
   @ForeignKey(() => User)
   @Column
@@ -48,4 +55,10 @@ export default class Group extends Model {
 
   @HasMany(() => Message)
   messages: Message[];
+
+  // @Column
+  // public get lastMessage(): string {
+  //   const messages = this.getDataValue('messages');
+  //   return messages.slice(messages.length - 2, messages.length - 1)?.content;
+  // }
 }

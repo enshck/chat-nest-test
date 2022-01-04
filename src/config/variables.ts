@@ -4,6 +4,7 @@ config();
 
 export default {
   port: process.env.PORT,
+  hostName: process.env.HOST_URL,
   dbUser: process.env.DB_USER,
   dbPassword: process.env.DB_PASSWORD,
   dbName: process.env.DB_NAME,

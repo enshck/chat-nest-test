@@ -18,7 +18,6 @@ import updateGroupDto from 'dto/chat/updateGroup.dto';
 import variables from 'config/variables';
 import getExtension from 'utils/getExtension';
 import { groupsImagesExtensions } from 'validation/fileUpload';
-import getHost from 'utils/getHost';
 
 @Injectable()
 class GroupService {
@@ -27,14 +26,6 @@ class GroupService {
     @Inject(dbTables.USER_TABLE) private userTable: typeof User,
     @Inject(dbTables.USER_GROUP_TABLE) private userGroupTable: typeof UserGroup,
   ) {}
-
-  private getFullPathOfGroupAvatar(hostName: string, avatar: string) {
-    if (!avatar) {
-      return null;
-    }
-
-    return `${getHost(hostName)}${variables.groupImagesDirectory}/${avatar}`;
-  }
 
   async getGroups(req): Promise<IGroupsResponse> {
     const user = await this.userTable.findOne({
@@ -69,10 +60,7 @@ class GroupService {
     const updatedGroupsData = groupsData.map((elem) => {
       const elemData = elem.get();
 
-      return {
-        ...elemData,
-        avatar: this.getFullPathOfGroupAvatar(req.hostName, elemData.avatar),
-      };
+      return elemData;
     });
 
     return {
@@ -206,14 +194,7 @@ class GroupService {
     });
 
     return {
-      data: groups.map((elem) => {
-        const elemData = elem.get();
-
-        return {
-          ...elemData,
-          avatar: this.getFullPathOfGroupAvatar(req.hostName, elemData.avatar),
-        };
-      }),
+      data: groups,
     };
   }
 

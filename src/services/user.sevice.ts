@@ -16,7 +16,6 @@ import getExtension from 'utils/getExtension';
 import { IResponseMessage } from 'interfaces/responseMessage';
 import { avatarExtensions } from 'validation/fileUpload';
 import variables from 'config/variables';
-import getHost from 'utils/getHost';
 
 @Injectable()
 class UserService {
@@ -36,12 +35,7 @@ class UserService {
 
     const userData = user.get();
 
-    return {
-      ...userData,
-      avatar: `${getHost(req.hostName)}${variables.avatarDirectory}/${
-        userData.avatar
-      }`,
-    };
+    return userData;
   }
 
   async updateUserData(

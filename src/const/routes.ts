@@ -30,4 +30,6 @@ export const groupPaths = {
 export const messagePaths = {
   GET_MESSAGES_FOR_GROUP: 'getMessagesForGroup',
   CREATE_MESSAGE: 'createMessage',
+  UPDATE_MESSAGE: 'updateMessage',
+  DELETE_MESSAGE: 'deleteMessage',
 };

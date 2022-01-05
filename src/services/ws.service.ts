@@ -48,10 +48,23 @@ export default class WsService
     return user.getDataValue('id');
   }
 
+  private async attachSocketIdToUser(socketId: string | null, userId: string) {
+    const currentUser = await this.userTable.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    currentUser.update({
+      socketId,
+    });
+  }
+
   async handleDisconnect(client: Socket) {
     // remove user from ws groups for message groups
 
     const userId = await this.getUserId(client);
+    await this.attachSocketIdToUser(null, userId);
 
     if (!userId) {
       return;
@@ -72,6 +85,7 @@ export default class WsService
   async handleConnection(client: Socket) {
     // add user to ws groups for message groups
     const userId = await this.getUserId(client);
+    await this.attachSocketIdToUser(client.id, userId);
 
     if (!userId) {
       return;

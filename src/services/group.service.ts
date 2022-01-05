@@ -3,6 +3,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import fs = require('fs');
 import { Op } from 'sequelize';
@@ -18,6 +19,7 @@ import updateGroupDto from 'dto/chat/updateGroup.dto';
 import variables from 'config/variables';
 import getExtension from 'utils/getExtension';
 import { groupsImagesExtensions } from 'validation/fileUpload';
+import WsService from './ws.service';
 
 @Injectable()
 class GroupService {
@@ -25,7 +27,32 @@ class GroupService {
     @Inject(dbTables.GROUP_TABLE) private groupTable: typeof Group,
     @Inject(dbTables.USER_TABLE) private userTable: typeof User,
     @Inject(dbTables.USER_GROUP_TABLE) private userGroupTable: typeof UserGroup,
+    private readonly wsService: WsService,
   ) {}
+
+  private async changeUserInRoom(
+    userId: string,
+    groupId: string,
+    isUserShouldJoin: boolean,
+  ) {
+    const currentUser = await this.userTable.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    const socketId = currentUser.getDataValue('socketId');
+
+    if (!socketId) {
+      throw new InternalServerErrorException('Internal server error');
+    }
+
+    if (isUserShouldJoin) {
+      this.wsService.server.in(socketId).socketsJoin(groupId);
+    } else {
+      this.wsService.server.in(socketId).socketsLeave(groupId);
+    }
+  }
 
   async getGroups(req): Promise<IGroupsResponse> {
     const user = await this.userTable.findOne({
@@ -84,6 +111,8 @@ class GroupService {
       userId,
     });
 
+    await this.changeUserInRoom(userId, groupId, true);
+
     return {
       message: 'Group created',
     };
@@ -113,6 +142,8 @@ class GroupService {
       userId,
     });
 
+    await this.changeUserInRoom(userId, groupId, true);
+
     return {
       message: 'User has joined in group',
     };
@@ -138,6 +169,8 @@ class GroupService {
     }
 
     await result.destroy();
+
+    await this.changeUserInRoom(userId, groupId, false);
 
     return {
       message: 'User has deleted from group',

@@ -49,6 +49,10 @@ export default class User extends Model {
   @Column
   token: string;
 
+  @AllowNull
+  @Column
+  socketId: string;
+
   @HasMany(() => Group)
   createdGroups: Group[];
 

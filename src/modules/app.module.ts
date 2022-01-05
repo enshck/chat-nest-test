@@ -4,6 +4,7 @@ import UserModule from './user.module';
 import MessagesModule from './messages.module';
 import StaticServeModule from './serveStatic.module';
 import ChatModule from './chat.module';
+import WebsocketModule from './ws.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import ChatModule from './chat.module';
     UserModule,
     ChatModule,
     MessagesModule,
+    WebsocketModule,
   ],
 })
 export class AppModule {}

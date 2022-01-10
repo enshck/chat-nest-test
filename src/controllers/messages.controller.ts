@@ -23,6 +23,9 @@ import UpdateMessage from 'dto/chat/updateMessage.dto';
 
 export interface IMessagesResponse {
   data: Message[];
+  pagination: {
+    nextCursor: string | null;
+  };
 }
 
 @Controller(controllerPaths.MESSAGE)
@@ -31,8 +34,12 @@ class MessagesController {
 
   @Get(messagePaths.GET_MESSAGES_FOR_GROUP)
   @UseGuards(AuthGuard)
-  async getGroups(@Req() req, @Query('groupId') groupId: string) {
-    return this.messageService.getMessagesForGroup(req, groupId);
+  async getGroups(
+    @Req() req,
+    @Query('groupId') groupId: string,
+    @Query('nextCursor') cursor: string,
+  ) {
+    return this.messageService.getMessagesForGroup(req, groupId, cursor);
   }
 
   @Post(messagePaths.CREATE_MESSAGE)

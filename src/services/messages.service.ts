@@ -5,6 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Op, FindOptions } from 'sequelize';
 
 import { dbTables } from 'const/dbTables';
 import Message from 'models/Message';
@@ -24,7 +25,11 @@ class MessageService {
     private readonly wsService: WsService,
   ) {}
 
-  async getMessagesForGroup(req, groupId: string): Promise<IMessagesResponse> {
+  async getMessagesForGroup(
+    req,
+    groupId: string,
+    cursor: string | null,
+  ): Promise<IMessagesResponse> {
     const { userId } = req;
 
     const result = this.userGroupTable.findAll({
@@ -38,21 +43,39 @@ class MessageService {
       throw new BadRequestException("You're not in group");
     }
 
-    const messages = await this.messageTable.findAll({
+    const optionsForFindMessages: FindOptions = {
       where: {
         groupId,
       },
-      attributes: ['id', 'content'],
+      attributes: ['id', 'content', 'createdAt'],
       include: [
         {
           association: 'author',
           attributes: ['id', 'email', 'userName', 'avatar'],
         },
       ],
+      limit: 10,
+      order: [['createdAt', 'ASC']],
+    };
+
+    if (cursor) {
+      optionsForFindMessages.where['createdAt'] = {
+        [Op.gt]: new Date(+cursor),
+      };
+    }
+
+    const messages = await this.messageTable.findAll({
+      ...optionsForFindMessages,
     });
+
+    const lastElementTimestamp = messages[9]?.getDataValue('createdAt');
+    const nextCursor = new Date(lastElementTimestamp).getTime();
 
     return {
       data: messages,
+      pagination: {
+        nextCursor: nextCursor ? `${nextCursor}` : null,
+      },
     };
   }
 

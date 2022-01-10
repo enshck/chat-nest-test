@@ -63,7 +63,7 @@ class GroupService {
       include: [
         {
           association: 'groups',
-          attributes: ['id', 'name', 'avatar'],
+          attributes: ['id', 'name', 'avatar', 'lastMessage'],
           through: {
             attributes: [],
           },
@@ -71,7 +71,6 @@ class GroupService {
             {
               association: 'messages',
               attributes: ['id', 'content'],
-              limit: 1,
               order: [['createdAt', 'DESC']],
             },
           ],
@@ -88,7 +87,10 @@ class GroupService {
     const updatedGroupsData = groupsData.map((elem) => {
       const elemData = elem.get();
 
-      return elemData;
+      return {
+        ...elemData,
+        messages: undefined,
+      };
     });
 
     return {

@@ -36,5 +36,5 @@ export default class Message extends Model {
   groupId: string;
 
   @BelongsTo(() => Group)
-  group: User;
+  group: Group;
 }

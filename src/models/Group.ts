@@ -10,6 +10,7 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
+  DataType,
 } from 'sequelize-typescript';
 import { UUIDV4 } from 'sequelize';
 
@@ -56,9 +57,17 @@ export default class Group extends Model {
   @HasMany(() => Message)
   messages: Message[];
 
-  // @Column
-  // public get lastMessage(): string {
-  //   const messages = this.getDataValue('messages');
-  //   return messages.slice(messages.length - 2, messages.length - 1)?.content;
-  // }
+  @AllowNull
+  @Column(DataType.VIRTUAL)
+  get lastMessage(): string {
+    const messages = this.getDataValue('messages');
+
+    const messagesData = (messages ?? []).map((elem) => elem.get());
+
+    if (messagesData.length <= 0) {
+      return '';
+    }
+
+    return messagesData[messagesData.length - 1]?.content ?? null;
+  }
 }

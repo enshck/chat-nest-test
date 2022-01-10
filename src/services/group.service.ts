@@ -19,6 +19,7 @@ import updateGroupDto from 'dto/chat/updateGroup.dto';
 import variables from 'config/variables';
 import getExtension from 'utils/getExtension';
 import { groupsImagesExtensions } from 'validation/fileUpload';
+import { groupsEventTypes } from 'const/wsTypes';
 import WsService from './ws.service';
 
 @Injectable()
@@ -194,6 +195,10 @@ class GroupService {
 
     await currentGroup.update(data);
 
+    this.wsService.server.to(data.groupId).emit(groupsEventTypes.UPDATE_GROUP, {
+      data,
+    });
+
     return {
       message: 'Group updated',
     };
@@ -273,6 +278,17 @@ class GroupService {
     group.update({
       avatar: fileName,
     });
+
+    const updatedData = group.get();
+
+    this.wsService.server
+      .to(groupId)
+      .emit(groupsEventTypes.UPDATE_GROUP_AVATAR, {
+        data: {
+          groupId,
+          avatar: updatedData.avatar,
+        },
+      });
 
     return {
       message: 'File uploaded',

@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import DatabaseModule from './database.module';
 import UserModule from './user.module';
-import MessagesModule from './messages.module';
 import StaticServeModule from './serveStatic.module';
-import ChatModule from './chat.module';
+import ChatModule from './chat.module.ts';
 import WebsocketModule from './ws.module';
 
 @Module({
@@ -12,7 +11,6 @@ import WebsocketModule from './ws.module';
     StaticServeModule,
     UserModule,
     ChatModule,
-    MessagesModule,
     WebsocketModule,
   ],
 })

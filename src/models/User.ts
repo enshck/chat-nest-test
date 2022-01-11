@@ -14,7 +14,10 @@ import { UUIDV4 } from 'sequelize';
 import UserGroup from './UserGroup';
 import Group from './Group';
 import Message from './Message';
+import PrivateGroup from './PrivateGroup';
 import variables from 'config/variables';
+import PrivateGroupUser from './PrivateGroupUser';
+import PrivateMessage from './PrivateMessage';
 
 @Table
 export default class User extends Model {
@@ -59,6 +62,12 @@ export default class User extends Model {
   @HasMany(() => Message)
   messages: Message[];
 
+  @HasMany(() => PrivateMessage)
+  privatMessages: PrivateMessage[];
+
   @BelongsToMany(() => Group, () => UserGroup)
   groups: Group[];
+
+  @BelongsToMany(() => PrivateGroup, () => PrivateGroupUser)
+  privateGroups: PrivateGroup[];
 }

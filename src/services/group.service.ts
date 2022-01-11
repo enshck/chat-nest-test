@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import fs = require('fs');
+import moment = require('moment');
 import { Op } from 'sequelize';
 
 import { dbTables } from 'const/dbTables';
@@ -63,15 +64,35 @@ class GroupService {
       include: [
         {
           association: 'groups',
-          attributes: ['id', 'name', 'avatar', 'lastMessage'],
+          attributes: [
+            'id',
+            'name',
+            'avatar',
+            'lastMessage',
+            'lastMessageCreatedAt',
+          ],
           through: {
             attributes: [],
           },
           include: [
             {
               association: 'messages',
-              attributes: ['id', 'content'],
+              attributes: ['id', 'content', 'createdAt'],
               order: [['createdAt', 'DESC']],
+            },
+          ],
+        },
+        {
+          association: 'privateGroups',
+          attributes: ['id', 'lastMessage', 'lastMessageCreatedAt'],
+          include: [
+            {
+              association: 'users',
+              attributes: ['id', 'userName', 'avatar'],
+            },
+            {
+              association: 'messages',
+              attributes: ['content', 'createdAt'],
             },
           ],
         },
@@ -83,6 +104,24 @@ class GroupService {
     }
 
     const groupsData = user.getDataValue('groups');
+    const privateGroupsData = user.getDataValue('privateGroups');
+
+    const usersFromGroups = privateGroupsData.map((elem) => {
+      const { users, lastMessage, lastMessageCreatedAt } = elem.get();
+
+      const { avatar, id, userName } = users
+        .find((elem) => elem.id !== req?.userId)
+        .get();
+
+      return {
+        avatar,
+        id,
+        userName,
+        lastMessage,
+        type: 'USER',
+        lastMessageCreatedAt,
+      };
+    });
 
     const updatedGroupsData = groupsData.map((elem) => {
       const elemData = elem.get();
@@ -90,11 +129,18 @@ class GroupService {
       return {
         ...elemData,
         messages: undefined,
+        type: 'GROUP',
       };
     });
 
+    const mergedList = [...usersFromGroups, ...updatedGroupsData].sort(
+      (a, b) =>
+        moment(b.lastMessageCreatedAt).unix() -
+        moment(a.lastMessageCreatedAt).unix(),
+    );
+
     return {
-      data: updatedGroupsData,
+      data: mergedList,
     };
   }
 

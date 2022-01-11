@@ -3,6 +3,7 @@ export const controllerPaths = {
   USER: 'user',
   GROUP: 'group',
   MESSAGE: 'message',
+  PRIVATE_MESSAGE: 'privateMessage',
 };
 
 export const authPaths = {
@@ -15,6 +16,7 @@ export const userPaths = {
   GET_USER: 'getUser',
   UPDATE_USER: 'updateUser',
   UPDATE_AVATAR: 'updateAvatar',
+  SEARCH_USERS: 'searchUsers',
 };
 
 export const groupPaths = {
@@ -29,6 +31,13 @@ export const groupPaths = {
 
 export const messagePaths = {
   GET_MESSAGES_FOR_GROUP: 'getMessagesForGroup',
+  CREATE_MESSAGE: 'createMessage',
+  UPDATE_MESSAGE: 'updateMessage',
+  DELETE_MESSAGE: 'deleteMessage',
+};
+
+export const privateMessagePaths = {
+  GET_MESSAGES: 'getMessages',
   CREATE_MESSAGE: 'createMessage',
   UPDATE_MESSAGE: 'updateMessage',
   DELETE_MESSAGE: 'deleteMessage',

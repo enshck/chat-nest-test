@@ -6,8 +6,9 @@ import {
   Body,
   BadRequestException,
 } from '@nestjs/common';
-import { Model } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import fs = require('fs');
+import IResponseData from 'interfaces/responseData';
 
 import { dbTables } from 'const/dbTables';
 import User from 'models/User';
@@ -116,6 +117,28 @@ class UserService {
 
     return {
       message: 'File uploaded',
+    };
+  }
+
+  async searchUsers(req, search: string): Promise<IResponseData<User[]>> {
+    if (!search.length) {
+      throw new BadRequestException('Search is required');
+    }
+
+    const results = await this.userTable.findAll({
+      where: {
+        userName: {
+          [Op.iLike]: `%${search}%`,
+        },
+        id: {
+          [Op.not]: req.userId,
+        },
+      },
+      attributes: ['id', 'userName', 'avatar'],
+    });
+
+    return {
+      data: results,
     };
   }
 }

@@ -8,6 +8,7 @@ import {
   Body,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -46,6 +47,12 @@ class AuthController {
     @Req() req: Request,
   ) {
     return this.userService.updateAvatar(file, req);
+  }
+
+  @Get(userPaths.SEARCH_USERS)
+  @UseGuards(AuthGuard)
+  async searchUsers(@Query('search') search, @Req() req) {
+    return this.userService.searchUsers(req, search);
   }
 }
 

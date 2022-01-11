@@ -5,6 +5,9 @@ import User from 'models/User';
 import Group from 'models/Group';
 import UserGroup from 'models/UserGroup';
 import Message from 'models/Message';
+import PrivateMessage from 'models/PrivateMessage';
+import PrivateGroup from 'models/PrivateGroup';
+import PrivateGroupUser from 'models/PrivateGroupUser';
 import { dbTables } from 'const/dbTables';
 
 export const databaseServices = [
@@ -17,7 +20,15 @@ export const databaseServices = [
         username: variables.dbUser,
         password: variables.dbPassword,
       });
-      sequelize.addModels([User, Group, UserGroup, Message]);
+      sequelize.addModels([
+        User,
+        Group,
+        UserGroup,
+        Message,
+        PrivateMessage,
+        PrivateGroup,
+        PrivateGroupUser,
+      ]);
       await sequelize.sync();
       return sequelize;
     },
@@ -54,6 +65,27 @@ export const databaseServices = [
     provide: dbTables.MESSAGE_TABLE,
     useFactory: async () => {
       return Message;
+    },
+    inject: ['SEQUELIZE'],
+  },
+  {
+    provide: dbTables.PRIVATE_MESSAGE_TABLE,
+    useFactory: async () => {
+      return PrivateMessage;
+    },
+    inject: ['SEQUELIZE'],
+  },
+  {
+    provide: dbTables.PRIVATE_GROUP_TABLE,
+    useFactory: async () => {
+      return PrivateGroup;
+    },
+    inject: ['SEQUELIZE'],
+  },
+  {
+    provide: dbTables.PRIVATE_GROUP_USER_TABLE,
+    useFactory: async () => {
+      return PrivateGroupUser;
     },
     inject: ['SEQUELIZE'],
   },

@@ -1,4 +1,9 @@
-import { Injectable, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Op, Includeable } from 'sequelize';
 
 import { dbTables } from 'const/dbTables';
@@ -9,6 +14,7 @@ import { IResponseMessage } from 'interfaces/responseMessage';
 import CreatePrivateMessage from 'dto/chat/createPrivateMessage.dto';
 import User from 'models/User';
 import { IMessagesResponse } from '../controllers/privateMessages.controller';
+import UpdatePrivateMessage from 'dto/chat/updatePrivateMessage.dto';
 
 interface IGroup {
   id: string;
@@ -166,6 +172,58 @@ class PrivateMessageService {
       pagination: {
         nextCursor: nextCursor ? `${nextCursor}` : null,
       },
+    };
+  }
+
+  async updatePrivateMessage(
+    data: UpdatePrivateMessage,
+    req,
+  ): Promise<IResponseMessage> {
+    const { content, id } = data;
+
+    const changedMessage = await this.messageTable.findOne({
+      where: {
+        id,
+        authorId: req?.userId,
+      },
+    });
+
+    if (!changedMessage) {
+      throw new NotFoundException('Not Found');
+    }
+
+    changedMessage.update({
+      content,
+    });
+
+    return {
+      message: 'Message has updated',
+    };
+  }
+
+  async deletePrivateMessage(
+    messageId: string,
+    req,
+  ): Promise<IResponseMessage> {
+    if (!messageId) {
+      throw new BadRequestException('messageId is required');
+    }
+
+    const message = await this.messageTable.findOne({
+      where: {
+        id: messageId,
+        authorId: req.userId,
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    await message.destroy();
+
+    return {
+      message: 'Message has deleted',
     };
   }
 }

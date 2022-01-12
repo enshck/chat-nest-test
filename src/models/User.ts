@@ -10,6 +10,7 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { UUIDV4 } from 'sequelize';
+import { ApiProperty } from '@nestjs/swagger';
 
 import UserGroup from './UserGroup';
 import Group from './Group';

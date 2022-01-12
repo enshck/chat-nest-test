@@ -3,6 +3,7 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  WsException,
 } from '@nestjs/websockets';
 import { Logger, Inject } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
@@ -28,6 +29,10 @@ export default class WsService
 
   private async getUserId(client: Socket) {
     const token = client.handshake.headers.authorization;
+
+    if (!token) {
+      throw new WsException('Token is required');
+    }
 
     try {
       jwt.verify(token, variables.jwtEncryptionKey);
@@ -98,7 +103,7 @@ export default class WsService
     });
     const groupsIds = results.map((elem) => elem.getDataValue('groupId'));
 
-    client.join(groupsIds);
+    client.join([...groupsIds]);
     this.logger.log(`Client connected: ${client.id}`);
   }
 }

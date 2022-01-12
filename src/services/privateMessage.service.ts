@@ -15,6 +15,8 @@ import CreatePrivateMessage from 'dto/chat/createPrivateMessage.dto';
 import User from 'models/User';
 import { IMessagesResponse } from '../controllers/privateMessages.controller';
 import UpdatePrivateMessage from 'dto/chat/updatePrivateMessage.dto';
+import WsService from 'services/ws.service';
+import { privateMessageEventTypes } from 'const/wsTypes';
 
 interface IGroup {
   id: string;
@@ -34,6 +36,7 @@ class PrivateMessageService {
     private groupUserTable: typeof PrivateGroupUser,
     @Inject(dbTables.USER_TABLE)
     private userTable: typeof User,
+    private wsService: WsService,
   ) {}
 
   private getGroupsByUser(currentUser: User) {
@@ -101,11 +104,35 @@ class PrivateMessageService {
       existingGroupId = idOfNewGroup;
     }
 
-    await this.messageTable.create({
+    const message = await this.messageTable.create({
       content,
       authorId: senderUserId,
       groupId: existingGroupId,
     });
+
+    const senderUser = await this.userTable.findOne({
+      where: {
+        id: senderUserId,
+      },
+      attributes: ['id', 'userName', 'avatar'],
+    });
+
+    const socketId = currentUser.getDataValue('socketId');
+
+    const { id, createdAt } = message.get();
+
+    this.wsService.server
+      .in(socketId)
+      .emit(privateMessageEventTypes.NEW_PRIVATE_MESSAGE, {
+        data: {
+          user: senderUser,
+          message: {
+            id,
+            content,
+            createdAt,
+          },
+        },
+      });
 
     return {
       message: 'Message created',
@@ -196,6 +223,43 @@ class PrivateMessageService {
       content,
     });
 
+    const groupId = changedMessage.getDataValue('groupId');
+
+    const groupUser = await this.groupUserTable.findAll({
+      where: {
+        groupId,
+      },
+    });
+
+    const userId = groupUser
+      .map((elem) => elem.getDataValue('userId'))
+      ?.find((id) => id !== req?.userId);
+
+    const user = await this.userTable.findOne({
+      where: {
+        id: userId,
+      },
+      attributes: ['id', 'socketId', 'avatar', 'userName'],
+    });
+
+    const userData = user.get();
+
+    this.wsService.server
+      .in(userData.socketId)
+      .emit(privateMessageEventTypes.UPDATE_PRIVATE_MESSAGE, {
+        data: {
+          user: {
+            ...userData,
+            socketId: undefined,
+          },
+          message: {
+            id,
+            content,
+            createdAt: changedMessage.createdAt,
+          },
+        },
+      });
+
     return {
       message: 'Message has updated',
     };
@@ -221,6 +285,39 @@ class PrivateMessageService {
     }
 
     await message.destroy();
+
+    const groupId = message.getDataValue('groupId');
+
+    const groupUser = await this.groupUserTable.findAll({
+      where: {
+        groupId,
+      },
+    });
+
+    const userId = groupUser
+      .map((elem) => elem.getDataValue('userId'))
+      ?.find((id) => id !== req?.userId);
+
+    const user = await this.userTable.findOne({
+      where: {
+        id: userId,
+      },
+      attributes: ['id', 'socketId', 'avatar', 'userName'],
+    });
+
+    const userData = user.get();
+
+    this.wsService.server
+      .in(userData.socketId)
+      .emit(privateMessageEventTypes.DELETE_PRIVATE_MESSAGE, {
+        data: {
+          user: {
+            ...userData,
+            socketId: undefined,
+          },
+          messageId,
+        },
+      });
 
     return {
       message: 'Message has deleted',

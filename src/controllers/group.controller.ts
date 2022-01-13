@@ -25,6 +25,7 @@ import {
   ApiNotFoundResponse,
   ApiConsumes,
   ApiBody,
+  ApiHeader,
 } from '@nestjs/swagger';
 
 import { controllerPaths } from 'const/routes';
@@ -74,6 +75,12 @@ class GroupData {
 
 @ApiBearerAuth()
 @ApiTags('Group')
+@ApiHeader({
+  name: 'Authorization',
+  description: 'Json Web Token',
+  required: true,
+})
+@ApiUnauthorizedResponse({ description: 'Invalid Token' })
 @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
 @Controller(controllerPaths.GROUP)
 class GroupController {

@@ -17,6 +17,8 @@ import {
   ApiOkResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
+  ApiHeader,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { controllerPaths } from 'const/routes';
@@ -75,6 +77,12 @@ class MessagesDataResponse {
 
 @ApiBearerAuth()
 @ApiTags('Private messages to user')
+@ApiHeader({
+  name: 'Authorization',
+  description: 'Json Web Token',
+  required: true,
+})
+@ApiUnauthorizedResponse({ description: 'Invalid Token' })
 @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
 @Controller(controllerPaths.PRIVATE_MESSAGE)
 class PrivateMessagesController {

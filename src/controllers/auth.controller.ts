@@ -98,6 +98,7 @@ class AuthController {
   })
   @ApiBadRequestResponse({ description: 'User is not exist' })
   @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
+  @ApiUnauthorizedResponse({ description: 'Invalid Token' })
   // SWAGGER
   @UseGuards(AuthGuard)
   @Put(authPaths.LOGOUT)

@@ -73,6 +73,7 @@ class UserAfterUpdatingResponse {
   description: 'Json Web Token',
   required: true,
 })
+@ApiUnauthorizedResponse({ description: 'Invalid Token' })
 @ApiInternalServerErrorResponse({ description: 'Internal server Error' })
 // SWAGGER
 @Controller(controllerPaths.USER)

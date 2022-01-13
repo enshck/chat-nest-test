@@ -9,6 +9,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  UsePipes,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -32,6 +33,8 @@ import UserService from 'services/user.sevice';
 import AuthGuard from 'guards/auth.guard';
 import updateUserDto from 'dto/user/updateUser.dto';
 import { ResponseMessage } from 'interfaces/responseMessage';
+import JoiValidationPipe from 'pipes/joiValidation.pipe';
+import { updateUserSchema } from 'validation/user';
 
 export interface IAuthResponse {
   email: string;
@@ -105,6 +108,7 @@ class AuthController {
   // SWAGGER
   @Put(userPaths.UPDATE_USER)
   @UseGuards(AuthGuard)
+  @UsePipes(new JoiValidationPipe(updateUserSchema))
   async updateUser(@Body() body: updateUserDto, @Req() req: Request) {
     return this.userService.updateUserData(body, req);
   }

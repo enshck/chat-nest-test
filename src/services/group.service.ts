@@ -286,10 +286,9 @@ class GroupService {
 
   async updateAvatar(
     file: Express.Multer.File,
+    groupId: string,
     req,
   ): Promise<IResponseMessage> {
-    const groupId = req.query.groupId;
-
     if (!groupId) {
       throw new BadRequestException('Group id has not recieved');
     }

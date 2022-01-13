@@ -155,8 +155,12 @@ class GroupController {
   @Put(groupPaths.UPDATE_AVATAR)
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async updateAvatar(@UploadedFile() file: Express.Multer.File, @Req() req) {
-    return this.groupService.updateAvatar(file, req);
+  async updateAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('groupId') groupId: string,
+    @Req() req,
+  ) {
+    return this.groupService.updateAvatar(file, groupId, req);
   }
 
   // SWAGGER

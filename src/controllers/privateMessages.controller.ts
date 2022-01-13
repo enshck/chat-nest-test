@@ -8,6 +8,7 @@ import {
   Body,
   UsePipes,
   Delete,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -129,7 +130,7 @@ class PrivateMessagesController {
     description: 'Not Found',
   })
   // SWAGGER
-  @Post(privateMessagePaths.UPDATE_MESSAGE)
+  @Put(privateMessagePaths.UPDATE_MESSAGE)
   @UseGuards(AuthGuard)
   @UsePipes(new JoiValidationPipe(updateMessageSchema))
   async updateMessage(@Body() data: UpdatePrivateMessageDto, @Req() req) {
